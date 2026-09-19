@@ -1,10 +1,12 @@
 import { AddMissingButton, GenerateRecipesButton } from "@/components/recipe-actions";
+import { resolveCaller } from "@/app/actions/organizations";
 import { getRecipes } from "@/lib/db/queries";
 
 export const metadata = { title: "Cook" };
 
 export default async function RecipesPage() {
-  const recipes = await getRecipes();
+  const caller = await resolveCaller();
+  const recipes = await getRecipes(caller.organizationId);
 
   return (
     <main className="grid gap-8">

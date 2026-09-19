@@ -1,11 +1,13 @@
 import Link from "next/link";
+import { resolveCaller } from "@/app/actions/organizations";
 import { getReceipts } from "@/lib/db/queries";
 import { formatDateLong, formatMoney } from "@/lib/format";
 
 export const metadata = { title: "Receipts" };
 
 export default async function ReceiptsPage() {
-  const rows = await getReceipts();
+  const caller = await resolveCaller();
+  const rows = await getReceipts(caller.organizationId);
   return (
     <main className="grid gap-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
