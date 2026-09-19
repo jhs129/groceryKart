@@ -1,6 +1,6 @@
 # GroceryKart
 
-Household grocery tracker: what’s on hand, what you just bought, what to shop for, and what to cook before it turns.
+Household grocery tracker: what’s on hand, what you just bought, what to shop for, and what to cook before it turns. Each household is an organization with its own isolated data, joined by invite code, so a family can share one account's worth of groceries across everyone in the house.
 
 ## Stack
 
@@ -8,6 +8,7 @@ Household grocery tracker: what’s on hand, what you just bought, what to shop 
 - Neon Postgres
 - Drizzle ORM
 - Vercel AI Gateway for receipt photos and recipe suggestions
+- A REST API (`/api/openapi.json`) and MCP server (`/api/mcp`), both behind OAuth 2.1, for other tools and agents to read/update a household's groceries
 
 ## Local setup
 

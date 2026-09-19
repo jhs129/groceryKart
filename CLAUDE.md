@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GroceryKart: a household grocery tracker (Next.js App Router + Neon Postgres + Drizzle ORM, deployed on Vercel). It tracks on-hand inventory, receipts as purchase history, shopping lists, and AI recipe suggestions biased toward perishables. See README.md for the product framing — notably, the app never knows if an item was actually used; it only knows what was recorded (purchases vs. inventory lots are deliberately separate facts).
 
+The app is multi-tenant: users belong to organizations (households), all grocery data is scoped by `organizationId`, and an organization is joined via a join code from the onboarding flow. Besides the authenticated web UI, GroceryKart exposes a REST API (`app/api/*`, spec at `/api/openapi.json`) and an MCP server (`/api/mcp`, 16 tools) for external and agent clients, both authenticated via an OAuth 2.1 flow (`/api/oauth/register`, `/api/oauth/authorize`, `/api/oauth/token`, discovery at `/.well-known/oauth-authorization-server`).
+
 ## Commands
 
 ```bash
@@ -29,9 +31,10 @@ Receipt scanning and recipe suggestions require Vercel AI Gateway access. On Ver
 
 ## Architecture
 
-- **Data flow is server-actions-first.** All mutations live in `app/actions/*.ts` (`"use server"`), calling Drizzle directly against `lib/db` — there is no separate API/route-handler layer for CRUD. Pages are server components; interactive pieces are client components in `components/` that call the server actions directly (form actions or direct calls) and rely on `revalidatePath` for freshness (no client-side cache invalidation library).
-- **Schema (`lib/db/schema.ts`) models purchase history and current inventory as distinct, only loosely coupled concepts**, per the product's core premise:
-  - `items` — canonical catalog, deduped via `normalizedName` (unique) with an `aliases` jsonb array.
+- **Data flow is server-actions-first for the web UI.** All mutations from the browser live in `app/actions/*.ts` (`"use server"`), calling Drizzle directly against `lib/db`. Pages are server components; interactive pieces are client components in `components/` that call the server actions directly (form actions or direct calls) and rely on `revalidatePath` for freshness (no client-side cache invalidation library). For external/agent clients there is a separate route-handler layer under `app/api/*` — a REST API (documented by the OpenAPI spec at `/api/openapi.json`, kept in sync via `scripts/verify-openapi-drift.ts`) and an MCP server at `/api/mcp` — both authenticated with OAuth 2.1 bearer tokens (`app/api/oauth/*`) rather than the browser session cookie; both call into the same `lib/domain/*` functions as the server actions.
+- **Schema (`lib/db/schema.ts`) models purchase history and current inventory as distinct, only loosely coupled concepts**, per the product's core premise. Every grocery-data table carries an `organizationId` so households are fully isolated from one another:
+  - `organizations` / `organizationMembers` — a household and its members (`owner`/`member` roles), joined via a per-organization join code.
+  - `items` — canonical catalog, deduped via `normalizedName` (unique per organization) with an `aliases` jsonb array.
   - `purchases` — an append-only fact log of what was bought (from manual add or receipt confirm). Never mutated after insert.
   - `inventoryLots` — the current belief of what's on hand, with `status` (`on_hand` / `used_up` / `discarded`) and `expiresAt`. Mutated as lots are adjusted or marked gone.
   - `receipts` + `receiptLines` — a receipt's raw parse, linked to the `items` it resolved to; `receiptLines.addedToInventory` records whether confirming the receipt also created an `inventoryLots` row.
