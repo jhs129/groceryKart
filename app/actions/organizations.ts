@@ -92,12 +92,15 @@ export async function switchOrganizationAction(
   const organizationId = String(formData.get("organizationId") ?? "");
   try {
     await switchActiveOrganization(caller.userId, organizationId);
-    await unstable_update({});
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Could not switch organizations.",
     };
   }
+  // Outside the try/catch above: the DB write already succeeded by this
+  // point, so a failure here isn't "could not switch organizations" — it's
+  // a stale session cookie the user will pick up on next full sign-in.
+  await unstable_update({});
   revalidatePath("/settings");
   return {};
 }

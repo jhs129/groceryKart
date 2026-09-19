@@ -54,7 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         aria-label="Mobile"
         className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper/95 backdrop-blur lg:hidden"
       >
-        <ul className="mx-auto grid max-w-6xl grid-cols-7 text-center text-[11px]">
+        <ul className="mx-auto grid max-w-6xl grid-cols-8 text-center text-[11px]">
           {links.map((link) => (
             <li key={link.href}>
               <Link href={link.href} className="block px-1 py-3 text-ink">

@@ -3,18 +3,22 @@ import { signIn } from "@/lib/auth";
 // Only allow same-origin relative paths as a post-sign-in redirect target.
 // Rejects protocol-relative ("//host/...") and absolute ("http://...") URLs
 // to avoid an open redirect via the OAuth authorize flow's callbackUrl.
-function safeRedirect(callbackUrl: string | undefined): string {
-  if (!callbackUrl) return "/";
-  if (!callbackUrl.startsWith("/")) return "/";
-  if (callbackUrl.startsWith("//")) return "/";
-  if (/^\/\/?[a-z][a-z0-9+.-]*:/i.test(callbackUrl)) return "/";
-  return callbackUrl;
+function safeRedirect(callbackUrl: string | string[] | undefined): string {
+  // A duplicated query param (?callbackUrl=a&callbackUrl=b) parses to a
+  // string[] rather than a string; take the first value in that case
+  // instead of letting .startsWith throw a TypeError.
+  const value = Array.isArray(callbackUrl) ? callbackUrl[0] : callbackUrl;
+  if (!value) return "/";
+  if (!value.startsWith("/")) return "/";
+  if (value.startsWith("//")) return "/";
+  if (/^\/\/?[a-z][a-z0-9+.-]*:/i.test(value)) return "/";
+  return value;
 }
 
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | undefined>>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
   const redirectTo = safeRedirect(params.callbackUrl);
