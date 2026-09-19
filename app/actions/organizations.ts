@@ -2,9 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { auth, unstable_update } from "@/lib/auth";
 import type { Caller } from "@/lib/domain/caller";
 import {
+  getOrganizationForUser,
   listMembers,
   listOrganizationsForUser,
   removeMember,
@@ -18,10 +19,17 @@ export async function resolveCaller(): Promise<Caller> {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
   if (!session.user.activeOrganizationId || !session.user.role) redirect("/onboarding");
+
+  // Re-check current membership/role rather than trusting the JWT claims,
+  // so a removed member's still-valid session is rejected (mirrors
+  // lib/api/auth.ts's authenticateRequest for the REST/MCP paths).
+  const membership = await getOrganizationForUser(session.user.id, session.user.activeOrganizationId);
+  if (!membership) redirect("/onboarding");
+
   return {
     userId: session.user.id,
     organizationId: session.user.activeOrganizationId,
-    role: session.user.role,
+    role: membership.role,
   };
 }
 
@@ -66,12 +74,16 @@ export interface SwitchOrganizationState {
   error?: string;
 }
 
-// R24: switches the caller's active organization. This only updates the
-// database (`users.activeOrganizationId`) — it does not touch the session
-// cookie, since server actions cannot rewrite the JWT directly. The client
-// caller (components/org-switcher.tsx) must follow a successful call with
-// next-auth/react's `useSession().update()` to refresh the session, the same
-// pattern Task 6's onboarding flow uses.
+// R24/R35: switches the caller's active organization. This updates the
+// database (`users.activeOrganizationId`) and then calls next-auth's
+// `unstable_update()` server-side (available here because this runs inside a
+// Server Action, which has cookie-write access) so the session cookie's
+// `activeOrganizationId`/`role` are refreshed before this action returns —
+// this triggers lib/auth.ts's `jwt` callback with `trigger === "update"`,
+// which re-reads the membership from the DB. R35 found that driving the
+// same refresh from the client via `useSession().update()` did not reliably
+// update the cookie on the installed next-auth beta; doing it server-side
+// here avoids that round trip entirely.
 export async function switchOrganizationAction(
   prevState: SwitchOrganizationState,
   formData: FormData,
@@ -80,6 +92,7 @@ export async function switchOrganizationAction(
   const organizationId = String(formData.get("organizationId") ?? "");
   try {
     await switchActiveOrganization(caller.userId, organizationId);
+    await unstable_update({});
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Could not switch organizations.",

@@ -1,9 +1,10 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { getOrCreateDefaultList } from "@/lib/db/queries";
 import { shoppingListItems, shoppingLists } from "@/lib/db/schema";
 import { findOrCreateItem } from "@/lib/matching";
 import type { Caller } from "./caller";
+import { NotFoundError } from "./errors";
 
 export interface AddListItemInput {
   name: string;
@@ -18,8 +19,11 @@ export async function addListItem(caller: Caller, input: AddListItemInput): Prom
   if (!name) return null;
 
   const list = input.listId
-    ? { id: input.listId }
+    ? await db.query.shoppingLists.findFirst({
+        where: and(eq(shoppingLists.id, input.listId), eq(shoppingLists.organizationId, caller.organizationId)),
+      })
     : await getOrCreateDefaultList(caller.organizationId);
+  if (!list) throw new NotFoundError("No such shopping list.");
 
   const item = await findOrCreateItem(caller.organizationId, { name });
   await db.insert(shoppingListItems).values({

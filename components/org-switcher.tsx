@@ -2,7 +2,6 @@
 
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import {
   switchOrganizationAction,
   type SwitchOrganizationState,
@@ -21,18 +20,20 @@ export interface OrgSwitcherProps {
 
 const initialState: SwitchOrganizationState = {};
 
-// R24: only rendered by the settings page when the user belongs to more than
-// one organization. Switching writes the new active organization to the
-// database, then forces a session refresh (see actions.ts comment) before
-// re-rendering so the rest of the app reflects the switch immediately.
+// R24/R35: only rendered by the settings page when the user belongs to more
+// than one organization. Switching writes the new active organization to the
+// database and refreshes the session cookie server-side (see
+// switchOrganizationAction's use of `unstable_update`), so by the time this
+// action resolves the cookie already reflects the new organization — a plain
+// `router.refresh()` is enough to re-render with it. (R35 found that relying
+// on client-side `useSession().update()` instead did not reliably refresh
+// the cookie on the installed next-auth beta.)
 export function OrgSwitcher({ organizations, activeOrganizationId }: OrgSwitcherProps) {
   const router = useRouter();
-  const { update } = useSession();
 
   async function handleSwitch(prevState: SwitchOrganizationState, formData: FormData) {
     const result = await switchOrganizationAction(prevState, formData);
     if (!result.error) {
-      await update();
       router.refresh();
     }
     return result;

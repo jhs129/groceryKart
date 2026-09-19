@@ -6,7 +6,7 @@ import { authConfig } from "@/lib/auth.config";
 import { getOrganizationForUser } from "@/lib/domain/organizations";
 import { eq } from "drizzle-orm";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   ...authConfig,
   adapter: DrizzleAdapter(db, {
     usersTable: users,

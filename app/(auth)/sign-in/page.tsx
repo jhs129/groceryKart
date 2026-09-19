@@ -1,6 +1,24 @@
 import { signIn } from "@/lib/auth";
 
-export default function SignInPage() {
+// Only allow same-origin relative paths as a post-sign-in redirect target.
+// Rejects protocol-relative ("//host/...") and absolute ("http://...") URLs
+// to avoid an open redirect via the OAuth authorize flow's callbackUrl.
+function safeRedirect(callbackUrl: string | undefined): string {
+  if (!callbackUrl) return "/";
+  if (!callbackUrl.startsWith("/")) return "/";
+  if (callbackUrl.startsWith("//")) return "/";
+  if (/^\/\/?[a-z][a-z0-9+.-]*:/i.test(callbackUrl)) return "/";
+  return callbackUrl;
+}
+
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const params = await searchParams;
+  const redirectTo = safeRedirect(params.callbackUrl);
+
   return (
     <main className="mx-auto max-w-sm space-y-4 p-6">
       <h1 className="text-xl font-semibold">Sign in</h1>
@@ -10,7 +28,7 @@ export default function SignInPage() {
           await signIn("credentials", {
             email: formData.get("email"),
             password: formData.get("password"),
-            redirectTo: "/",
+            redirectTo,
           });
         }}
         className="space-y-3"
@@ -36,7 +54,7 @@ export default function SignInPage() {
       <form
         action={async () => {
           "use server";
-          await signIn("google", { redirectTo: "/" });
+          await signIn("google", { redirectTo });
         }}
       >
         <button type="submit" className="w-full rounded border p-2">
