@@ -59,6 +59,21 @@ export async function joinOrganizationByCode(userId: string, joinCode: string) {
   return { id: organization.id, name: organization.name };
 }
 
+// R24: lets the settings UI decide whether an organization switcher is
+// needed (only relevant when a user belongs to more than one organization).
+export async function listOrganizationsForUser(userId: string) {
+  const rows = await db
+    .select({
+      id: organizations.id,
+      name: organizations.name,
+      role: organizationMembers.role,
+    })
+    .from(organizationMembers)
+    .innerJoin(organizations, eq(organizations.id, organizationMembers.organizationId))
+    .where(eq(organizationMembers.userId, userId));
+  return rows as { id: string; name: string; role: "owner" | "member" }[];
+}
+
 export async function getOrganizationForUser(userId: string, organizationId: string) {
   const membership = await db.query.organizationMembers.findFirst({
     where: and(
