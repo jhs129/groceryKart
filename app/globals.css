@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #eef2e8;
+  --tile: #f7f9f3;
+  --ink: #12261c;
+  --ink-soft: #3d5347;
+  --line: #c5d0c4;
+  --herb: #3b6d4a;
+  --clementine: #e85d04;
+  --tomato: #b42318;
+  --banana: #b8860b;
+  --clip: #5c6b62;
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-tile: var(--tile);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-herb: var(--herb);
+  --color-clementine: var(--clementine);
+  --color-tomato: var(--tomato);
+  --color-banana: var(--banana);
+  --color-clip: var(--clip);
+  --font-sans: var(--font-ibm-plex-sans);
+  --font-display: var(--font-newsreader);
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ibm-plex-sans), "IBM Plex Sans", sans-serif;
+}
+
+body {
+  min-height: 100%;
+  background-image:
+    linear-gradient(180deg, rgba(18, 38, 28, 0.03), transparent 180px),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 47px,
+      rgba(197, 208, 196, 0.35) 47px,
+      rgba(197, 208, 196, 0.35) 48px
+    );
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--clementine);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

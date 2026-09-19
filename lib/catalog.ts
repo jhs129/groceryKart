@@ -1,0 +1,76 @@
+import type { Category, Location } from "./types";
+
+export type CatalogItem = {
+  name: string;
+  aliases?: string[];
+  category: Category;
+  defaultUnit: string;
+  typicalShelfLifeDays: number | null;
+  perishable: boolean;
+  defaultLocation: Location;
+};
+
+export const GROCERY_CATALOG: CatalogItem[] = [
+  { name: "Whole milk", aliases: ["milk", "2% milk", "skim milk"], category: "dairy", defaultUnit: "gal", typicalShelfLifeDays: 7, perishable: true, defaultLocation: "fridge" },
+  { name: "Greek yogurt", aliases: ["yogurt", "plain yogurt"], category: "dairy", defaultUnit: "each", typicalShelfLifeDays: 14, perishable: true, defaultLocation: "fridge" },
+  { name: "Eggs", aliases: ["large eggs", "dozen eggs"], category: "dairy", defaultUnit: "dozen", typicalShelfLifeDays: 21, perishable: true, defaultLocation: "fridge" },
+  { name: "Butter", aliases: ["unsalted butter", "salted butter"], category: "dairy", defaultUnit: "each", typicalShelfLifeDays: 30, perishable: true, defaultLocation: "fridge" },
+  { name: "Cheddar cheese", aliases: ["cheese", "sharp cheddar"], category: "dairy", defaultUnit: "lb", typicalShelfLifeDays: 21, perishable: true, defaultLocation: "fridge" },
+  { name: "Parmesan", aliases: ["parmigiano"], category: "dairy", defaultUnit: "oz", typicalShelfLifeDays: 45, perishable: true, defaultLocation: "fridge" },
+  { name: "Heavy cream", aliases: ["whipping cream"], category: "dairy", defaultUnit: "pint", typicalShelfLifeDays: 10, perishable: true, defaultLocation: "fridge" },
+  { name: "Baby spinach", aliases: ["spinach", "leafy greens"], category: "produce", defaultUnit: "bag", typicalShelfLifeDays: 5, perishable: true, defaultLocation: "fridge" },
+  { name: "Romaine lettuce", aliases: ["lettuce", "salad mix"], category: "produce", defaultUnit: "each", typicalShelfLifeDays: 7, perishable: true, defaultLocation: "fridge" },
+  { name: "Bananas", aliases: ["banana"], category: "produce", defaultUnit: "bunch", typicalShelfLifeDays: 5, perishable: true, defaultLocation: "counter" },
+  { name: "Apples", aliases: ["honeycrisp", "gala apples"], category: "produce", defaultUnit: "lb", typicalShelfLifeDays: 21, perishable: true, defaultLocation: "fridge" },
+  { name: "Lemons", aliases: ["lemon"], category: "produce", defaultUnit: "each", typicalShelfLifeDays: 14, perishable: true, defaultLocation: "fridge" },
+  { name: "Limes", aliases: ["lime"], category: "produce", defaultUnit: "each", typicalShelfLifeDays: 14, perishable: true, defaultLocation: "fridge" },
+  { name: "Avocados", aliases: ["avocado", "hass avocado"], category: "produce", defaultUnit: "each", typicalShelfLifeDays: 4, perishable: true, defaultLocation: "counter" },
+  { name: "Tomatoes", aliases: ["roma tomatoes", "vine tomatoes"], category: "produce", defaultUnit: "lb", typicalShelfLifeDays: 7, perishable: true, defaultLocation: "counter" },
+  { name: "Cucumber", aliases: ["english cucumber"], category: "produce", defaultUnit: "each", typicalShelfLifeDays: 7, perishable: true, defaultLocation: "fridge" },
+  { name: "Carrots", aliases: ["baby carrots"], category: "produce", defaultUnit: "lb", typicalShelfLifeDays: 21, perishable: true, defaultLocation: "fridge" },
+  { name: "Yellow onion", aliases: ["onion", "onions", "sweet onion"], category: "produce", defaultUnit: "each", typicalShelfLifeDays: 30, perishable: true, defaultLocation: "pantry" },
+  { name: "Garlic", aliases: ["garlic bulb"], category: "produce", defaultUnit: "each", typicalShelfLifeDays: 45, perishable: true, defaultLocation: "pantry" },
+  { name: "Russet potatoes", aliases: ["potatoes", "potato"], category: "produce", defaultUnit: "lb", typicalShelfLifeDays: 21, perishable: true, defaultLocation: "pantry" },
+  { name: "Broccoli", aliases: ["broccoli crowns"], category: "produce", defaultUnit: "each", typicalShelfLifeDays: 6, perishable: true, defaultLocation: "fridge" },
+  { name: "Bell pepper", aliases: ["red pepper", "green pepper"], category: "produce", defaultUnit: "each", typicalShelfLifeDays: 8, perishable: true, defaultLocation: "fridge" },
+  { name: "Mushrooms", aliases: ["baby bella", "white mushrooms"], category: "produce", defaultUnit: "oz", typicalShelfLifeDays: 5, perishable: true, defaultLocation: "fridge" },
+  { name: "Cilantro", aliases: ["fresh cilantro"], category: "produce", defaultUnit: "bunch", typicalShelfLifeDays: 6, perishable: true, defaultLocation: "fridge" },
+  { name: "Strawberries", aliases: ["berries"], category: "produce", defaultUnit: "lb", typicalShelfLifeDays: 4, perishable: true, defaultLocation: "fridge" },
+  { name: "Blueberries", category: "produce", defaultUnit: "pint", typicalShelfLifeDays: 7, perishable: true, defaultLocation: "fridge" },
+  { name: "Chicken thighs", aliases: ["chicken", "chicken breast"], category: "meat", defaultUnit: "lb", typicalShelfLifeDays: 2, perishable: true, defaultLocation: "fridge" },
+  { name: "Ground beef", aliases: ["beef", "hamburger"], category: "meat", defaultUnit: "lb", typicalShelfLifeDays: 2, perishable: true, defaultLocation: "fridge" },
+  { name: "Bacon", category: "meat", defaultUnit: "pack", typicalShelfLifeDays: 14, perishable: true, defaultLocation: "fridge" },
+  { name: "Salmon", aliases: ["salmon fillet"], category: "seafood", defaultUnit: "lb", typicalShelfLifeDays: 2, perishable: true, defaultLocation: "fridge" },
+  { name: "Sourdough bread", aliases: ["bread", "loaf", "bakery bread"], category: "bakery", defaultUnit: "loaf", typicalShelfLifeDays: 4, perishable: true, defaultLocation: "counter" },
+  { name: "Tortillas", aliases: ["flour tortillas"], category: "bakery", defaultUnit: "pack", typicalShelfLifeDays: 14, perishable: true, defaultLocation: "pantry" },
+  { name: "Olive oil", aliases: ["extra virgin olive oil"], category: "pantry", defaultUnit: "bottle", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Canola oil", aliases: ["vegetable oil"], category: "pantry", defaultUnit: "bottle", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Rice", aliases: ["jasmine rice", "white rice"], category: "pantry", defaultUnit: "lb", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Pasta", aliases: ["spaghetti", "penne"], category: "pantry", defaultUnit: "box", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Canned tomatoes", aliases: ["crushed tomatoes", "diced tomatoes"], category: "pantry", defaultUnit: "can", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Tomato paste", category: "pantry", defaultUnit: "can", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Black beans", aliases: ["canned beans"], category: "pantry", defaultUnit: "can", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Chickpeas", aliases: ["garbanzo beans"], category: "pantry", defaultUnit: "can", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Chicken stock", aliases: ["broth", "stock"], category: "pantry", defaultUnit: "carton", typicalShelfLifeDays: 180, perishable: false, defaultLocation: "pantry" },
+  { name: "All-purpose flour", aliases: ["flour"], category: "pantry", defaultUnit: "lb", typicalShelfLifeDays: 180, perishable: false, defaultLocation: "pantry" },
+  { name: "Sugar", aliases: ["granulated sugar"], category: "pantry", defaultUnit: "lb", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Brown sugar", category: "pantry", defaultUnit: "lb", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Salt", aliases: ["kosher salt"], category: "pantry", defaultUnit: "box", typicalShelfLifeDays: null, perishable: false, defaultLocation: "pantry" },
+  { name: "Black pepper", aliases: ["pepper"], category: "pantry", defaultUnit: "jar", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Soy sauce", category: "pantry", defaultUnit: "bottle", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Peanut butter", category: "pantry", defaultUnit: "jar", typicalShelfLifeDays: 180, perishable: false, defaultLocation: "pantry" },
+  { name: "Honey", category: "pantry", defaultUnit: "jar", typicalShelfLifeDays: null, perishable: false, defaultLocation: "pantry" },
+  { name: "Oats", aliases: ["rolled oats", "oatmeal"], category: "pantry", defaultUnit: "canister", typicalShelfLifeDays: 180, perishable: false, defaultLocation: "pantry" },
+  { name: "Coffee", aliases: ["ground coffee", "coffee beans"], category: "beverages", defaultUnit: "bag", typicalShelfLifeDays: 60, perishable: false, defaultLocation: "pantry" },
+  { name: "Orange juice", aliases: ["juice"], category: "beverages", defaultUnit: "carton", typicalShelfLifeDays: 10, perishable: true, defaultLocation: "fridge" },
+  { name: "Sparkling water", aliases: ["seltzer", "la croix"], category: "beverages", defaultUnit: "pack", typicalShelfLifeDays: 365, perishable: false, defaultLocation: "pantry" },
+  { name: "Frozen peas", aliases: ["peas"], category: "frozen", defaultUnit: "bag", typicalShelfLifeDays: 180, perishable: false, defaultLocation: "freezer" },
+  { name: "Frozen berries", category: "frozen", defaultUnit: "bag", typicalShelfLifeDays: 180, perishable: false, defaultLocation: "freezer" },
+  { name: "Ice cream", category: "frozen", defaultUnit: "pint", typicalShelfLifeDays: 60, perishable: false, defaultLocation: "freezer" },
+  { name: "Frozen pizza", category: "frozen", defaultUnit: "each", typicalShelfLifeDays: 90, perishable: false, defaultLocation: "freezer" },
+  { name: "Tortilla chips", aliases: ["chips"], category: "snacks", defaultUnit: "bag", typicalShelfLifeDays: 45, perishable: false, defaultLocation: "pantry" },
+  { name: "Crackers", category: "snacks", defaultUnit: "box", typicalShelfLifeDays: 60, perishable: false, defaultLocation: "pantry" },
+  { name: "Paper towels", aliases: ["bounty"], category: "household", defaultUnit: "pack", typicalShelfLifeDays: null, perishable: false, defaultLocation: "pantry" },
+  { name: "Dish soap", aliases: ["dawn"], category: "household", defaultUnit: "bottle", typicalShelfLifeDays: null, perishable: false, defaultLocation: "pantry" },
+  { name: "Trash bags", category: "household", defaultUnit: "box", typicalShelfLifeDays: null, perishable: false, defaultLocation: "pantry" },
+];
