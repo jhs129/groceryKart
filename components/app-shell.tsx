@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { signOut } from "@/lib/auth";
 
 const links = [
   { href: "/", label: "House" },
@@ -7,6 +8,7 @@ const links = [
   { href: "/lists", label: "Kart" },
   { href: "/recipes", label: "Cook" },
   { href: "/ask", label: "Do we have" },
+  { href: "/settings", label: "Settings" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -32,6 +34,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {link.label}
             </Link>
           ))}
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/sign-in" });
+            }}
+          >
+            <button
+              type="submit"
+              className="w-full rounded-sm px-2 py-2 text-left text-[15px] text-ink hover:bg-tile"
+            >
+              Sign out
+            </button>
+          </form>
         </nav>
       </header>
       <div className="min-w-0">{children}</div>
@@ -39,7 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         aria-label="Mobile"
         className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper/95 backdrop-blur lg:hidden"
       >
-        <ul className="mx-auto grid max-w-6xl grid-cols-6 text-center text-[11px]">
+        <ul className="mx-auto grid max-w-6xl grid-cols-8 text-center text-[11px]">
           {links.map((link) => (
             <li key={link.href}>
               <Link href={link.href} className="block px-1 py-3 text-ink">
@@ -47,6 +62,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             </li>
           ))}
+          <li>
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/sign-in" });
+              }}
+            >
+              <button type="submit" className="block w-full px-1 py-3 text-ink">
+                Sign out
+              </button>
+            </form>
+          </li>
         </ul>
       </nav>
     </div>

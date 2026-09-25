@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { AskForm } from "@/components/ask-form";
+import { resolveCaller } from "@/app/actions/organizations";
 import { getExpiringLots, getInventorySummary, getOpenLists } from "@/lib/db/queries";
 import { expiryTone, formatDaysAway, formatQty } from "@/lib/format";
 
 export default async function HomePage() {
+  const caller = await resolveCaller();
   const [{ lots, totalLots, byLocation }, expiring, lists] = await Promise.all([
-    getInventorySummary(),
-    getExpiringLots(4),
-    getOpenLists(),
+    getInventorySummary(caller.organizationId),
+    getExpiringLots(caller.organizationId, 4),
+    getOpenLists(caller.organizationId),
   ]);
   const kart = lists[0];
 

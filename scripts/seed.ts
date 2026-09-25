@@ -1,8 +1,10 @@
+import { eq } from "drizzle-orm";
 import { GROCERY_CATALOG } from "../lib/catalog";
 import { db } from "../lib/db";
 import {
   inventoryLots,
   items,
+  organizations,
   purchases,
   receiptLines,
   receipts,
@@ -12,6 +14,9 @@ import {
   shoppingLists,
 } from "../lib/db/schema";
 import { normalizeName } from "../lib/matching";
+
+const SEED_ORG_JOIN_CODE = "SEED-HOUSEHOLD";
+const SEED_ORG_NAME = "Seed Household";
 
 function daysAgo(days: number) {
   const date = new Date();
@@ -36,10 +41,24 @@ async function seed() {
   await db.delete(receipts);
   await db.delete(items);
 
+  const existingOrg = await db.query.organizations.findFirst({
+    where: eq(organizations.joinCode, SEED_ORG_JOIN_CODE),
+  });
+
+  const org =
+    existingOrg ??
+    (
+      await db
+        .insert(organizations)
+        .values({ name: SEED_ORG_NAME, joinCode: SEED_ORG_JOIN_CODE })
+        .returning()
+    )[0];
+
   const inserted = await db
     .insert(items)
     .values(
       GROCERY_CATALOG.map((item) => ({
+        organizationId: org.id,
         name: item.name,
         normalizedName: normalizeName(item.name),
         category: item.category,
@@ -75,35 +94,35 @@ async function seed() {
   const cheese = requireItem("Cheddar cheese");
 
   await db.insert(purchases).values([
-    { itemId: milk.id, quantity: 1, unit: "gal", purchasedAt: daysAgo(2), store: "Kroger", rawName: "WHOLE MILK 1GAL" },
-    { itemId: spinach.id, quantity: 1, unit: "bag", purchasedAt: daysAgo(5), store: "Kroger", rawName: "ORG BABY SPINACH" },
-    { itemId: eggs.id, quantity: 1, unit: "dozen", purchasedAt: daysAgo(8), store: "Kroger", rawName: "LG EGGS 12CT" },
-    { itemId: bread.id, quantity: 1, unit: "loaf", purchasedAt: daysAgo(3), store: "Kroger", rawName: "SOURDOUGH LOAF" },
-    { itemId: bananas.id, quantity: 1, unit: "bunch", purchasedAt: daysAgo(3), store: "Kroger", rawName: "BANANAS" },
-    { itemId: yogurt.id, quantity: 2, unit: "each", purchasedAt: daysAgo(6), store: "Kroger", rawName: "GREEK YOGURT" },
-    { itemId: chicken.id, quantity: 2, unit: "lb", purchasedAt: daysAgo(10), store: "Kroger", rawName: "CHICKEN THIGHS" },
+    { organizationId: org.id, itemId: milk.id, quantity: 1, unit: "gal", purchasedAt: daysAgo(2), store: "Kroger", rawName: "WHOLE MILK 1GAL" },
+    { organizationId: org.id, itemId: spinach.id, quantity: 1, unit: "bag", purchasedAt: daysAgo(5), store: "Kroger", rawName: "ORG BABY SPINACH" },
+    { organizationId: org.id, itemId: eggs.id, quantity: 1, unit: "dozen", purchasedAt: daysAgo(8), store: "Kroger", rawName: "LG EGGS 12CT" },
+    { organizationId: org.id, itemId: bread.id, quantity: 1, unit: "loaf", purchasedAt: daysAgo(3), store: "Kroger", rawName: "SOURDOUGH LOAF" },
+    { organizationId: org.id, itemId: bananas.id, quantity: 1, unit: "bunch", purchasedAt: daysAgo(3), store: "Kroger", rawName: "BANANAS" },
+    { organizationId: org.id, itemId: yogurt.id, quantity: 2, unit: "each", purchasedAt: daysAgo(6), store: "Kroger", rawName: "GREEK YOGURT" },
+    { organizationId: org.id, itemId: chicken.id, quantity: 2, unit: "lb", purchasedAt: daysAgo(10), store: "Kroger", rawName: "CHICKEN THIGHS" },
   ]);
 
   await db.insert(inventoryLots).values([
-    { itemId: milk.id, quantity: 1, unit: "gal", location: "fridge", purchasedAt: daysAgo(2), expiresAt: daysFromNow(5), status: "on_hand" },
-    { itemId: spinach.id, quantity: 1, unit: "bag", location: "fridge", purchasedAt: daysAgo(5), expiresAt: daysFromNow(1), status: "on_hand" },
-    { itemId: eggs.id, quantity: 1, unit: "dozen", location: "fridge", purchasedAt: daysAgo(8), expiresAt: daysFromNow(13), status: "on_hand" },
-    { itemId: bread.id, quantity: 1, unit: "loaf", location: "counter", purchasedAt: daysAgo(3), expiresAt: daysFromNow(1), status: "on_hand" },
-    { itemId: bananas.id, quantity: 1, unit: "bunch", location: "counter", purchasedAt: daysAgo(3), expiresAt: new Date(), status: "on_hand" },
-    { itemId: yogurt.id, quantity: 2, unit: "each", location: "fridge", purchasedAt: daysAgo(6), expiresAt: daysFromNow(2), status: "on_hand" },
-    { itemId: chicken.id, quantity: 2, unit: "lb", location: "freezer", purchasedAt: daysAgo(10), expiresAt: daysFromNow(80), status: "on_hand" },
-    { itemId: onion.id, quantity: 4, unit: "each", location: "pantry", purchasedAt: daysAgo(12), expiresAt: daysFromNow(18), status: "on_hand" },
-    { itemId: garlic.id, quantity: 1, unit: "each", location: "pantry", purchasedAt: daysAgo(20), expiresAt: daysFromNow(25), status: "on_hand" },
-    { itemId: oil.id, quantity: 1, unit: "bottle", location: "pantry", purchasedAt: daysAgo(40), status: "on_hand" },
-    { itemId: tomatoes.id, quantity: 3, unit: "can", location: "pantry", purchasedAt: daysAgo(30), status: "on_hand" },
-    { itemId: rice.id, quantity: 2, unit: "lb", location: "pantry", purchasedAt: daysAgo(50), status: "on_hand" },
-    { itemId: pasta.id, quantity: 2, unit: "box", location: "pantry", purchasedAt: daysAgo(18), status: "on_hand" },
-    { itemId: cheese.id, quantity: 0.5, unit: "lb", location: "fridge", purchasedAt: daysAgo(9), expiresAt: daysFromNow(8), status: "on_hand" },
+    { organizationId: org.id, itemId: milk.id, quantity: 1, unit: "gal", location: "fridge", purchasedAt: daysAgo(2), expiresAt: daysFromNow(5), status: "on_hand" },
+    { organizationId: org.id, itemId: spinach.id, quantity: 1, unit: "bag", location: "fridge", purchasedAt: daysAgo(5), expiresAt: daysFromNow(1), status: "on_hand" },
+    { organizationId: org.id, itemId: eggs.id, quantity: 1, unit: "dozen", location: "fridge", purchasedAt: daysAgo(8), expiresAt: daysFromNow(13), status: "on_hand" },
+    { organizationId: org.id, itemId: bread.id, quantity: 1, unit: "loaf", location: "counter", purchasedAt: daysAgo(3), expiresAt: daysFromNow(1), status: "on_hand" },
+    { organizationId: org.id, itemId: bananas.id, quantity: 1, unit: "bunch", location: "counter", purchasedAt: daysAgo(3), expiresAt: new Date(), status: "on_hand" },
+    { organizationId: org.id, itemId: yogurt.id, quantity: 2, unit: "each", location: "fridge", purchasedAt: daysAgo(6), expiresAt: daysFromNow(2), status: "on_hand" },
+    { organizationId: org.id, itemId: chicken.id, quantity: 2, unit: "lb", location: "freezer", purchasedAt: daysAgo(10), expiresAt: daysFromNow(80), status: "on_hand" },
+    { organizationId: org.id, itemId: onion.id, quantity: 4, unit: "each", location: "pantry", purchasedAt: daysAgo(12), expiresAt: daysFromNow(18), status: "on_hand" },
+    { organizationId: org.id, itemId: garlic.id, quantity: 1, unit: "each", location: "pantry", purchasedAt: daysAgo(20), expiresAt: daysFromNow(25), status: "on_hand" },
+    { organizationId: org.id, itemId: oil.id, quantity: 1, unit: "bottle", location: "pantry", purchasedAt: daysAgo(40), status: "on_hand" },
+    { organizationId: org.id, itemId: tomatoes.id, quantity: 3, unit: "can", location: "pantry", purchasedAt: daysAgo(30), status: "on_hand" },
+    { organizationId: org.id, itemId: rice.id, quantity: 2, unit: "lb", location: "pantry", purchasedAt: daysAgo(50), status: "on_hand" },
+    { organizationId: org.id, itemId: pasta.id, quantity: 2, unit: "box", location: "pantry", purchasedAt: daysAgo(18), status: "on_hand" },
+    { organizationId: org.id, itemId: cheese.id, quantity: 0.5, unit: "lb", location: "fridge", purchasedAt: daysAgo(9), expiresAt: daysFromNow(8), status: "on_hand" },
   ]);
 
   const [list] = await db
     .insert(shoppingLists)
-    .values({ name: "This week's kart" })
+    .values({ organizationId: org.id, name: "This week's kart" })
     .returning();
 
   await db.insert(shoppingListItems).values([
@@ -116,6 +135,7 @@ async function seed() {
   const [recipe] = await db
     .insert(recipes)
     .values({
+      organizationId: org.id,
       title: "Spinach omelette",
       servings: 2,
       source: "seed",

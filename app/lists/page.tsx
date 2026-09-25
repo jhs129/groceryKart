@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { createShoppingList } from "@/app/actions/lists";
+import { resolveCaller } from "@/app/actions/organizations";
 import { getOpenLists, getListWithItems } from "@/lib/db/queries";
 import { redirect } from "next/navigation";
 
 export const metadata = { title: "Kart" };
 
 export default async function ListsPage() {
-  const lists = await getOpenLists();
+  const caller = await resolveCaller();
+  const lists = await getOpenLists(caller.organizationId);
   const withCounts = await Promise.all(
     lists.map(async (list) => {
-      const detail = await getListWithItems(list.id);
+      const detail = await getListWithItems(caller.organizationId, list.id);
       const remaining =
         detail?.items.filter((row) => !row.row.checked).length ?? 0;
       return { list, remaining };

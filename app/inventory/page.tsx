@@ -1,11 +1,13 @@
 import { InventoryForm } from "@/components/inventory-form";
 import { LotRow } from "@/components/lot-row";
+import { resolveCaller } from "@/app/actions/organizations";
 import { getOnHandLots } from "@/lib/db/queries";
 
 export const metadata = { title: "On hand" };
 
 export default async function InventoryPage() {
-  const lots = await getOnHandLots();
+  const caller = await resolveCaller();
+  const lots = await getOnHandLots(caller.organizationId);
   const grouped = new Map<string, typeof lots>();
   for (const row of lots) {
     const bucket = grouped.get(row.lot.location) ?? [];

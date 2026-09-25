@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ListEditor } from "@/components/list-editor";
+import { resolveCaller } from "@/app/actions/organizations";
 import { getListWithItems } from "@/lib/db/queries";
 
 export default async function ListDetailPage({
@@ -8,7 +9,8 @@ export default async function ListDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const detail = await getListWithItems(id);
+  const caller = await resolveCaller();
+  const detail = await getListWithItems(caller.organizationId, id);
   if (!detail) notFound();
 
   return (

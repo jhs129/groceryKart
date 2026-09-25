@@ -1,64 +1,47 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { db } from "@/lib/db";
-import { getOrCreateDefaultList } from "@/lib/db/queries";
-import { shoppingListItems, shoppingLists } from "@/lib/db/schema";
-import { findOrCreateItem } from "@/lib/matching";
-import { eq } from "drizzle-orm";
+import { resolveCaller } from "@/app/actions/organizations";
+import {
+  addListItem as addListItemDomain,
+  createShoppingList as createShoppingListDomain,
+  toggleListItem as toggleListItemDomain,
+  addMissingIngredientsToList as addMissingIngredientsToListDomain,
+} from "@/lib/domain/lists";
 
 export async function addListItem(formData: FormData) {
-  const name = String(formData.get("name") ?? "").trim();
-  if (!name) return;
+  const caller = await resolveCaller();
   const listId = String(formData.get("listId") ?? "");
-  const list = listId
-    ? { id: listId }
-    : await getOrCreateDefaultList();
-
-  const item = await findOrCreateItem({ name });
-  await db.insert(shoppingListItems).values({
-    listId: list.id,
-    itemId: item?.id ?? null,
-    name: item?.name ?? name,
+  const resultListId = await addListItemDomain(caller, {
+    name: String(formData.get("name") ?? ""),
+    listId: listId || undefined,
     quantity: Number(formData.get("quantity") ?? 1) || 1,
-    unit: String(formData.get("unit") ?? item?.defaultUnit ?? "each"),
-    reason: String(formData.get("reason") ?? "manual"),
+    unit: String(formData.get("unit") ?? "") || undefined,
+    reason: String(formData.get("reason") ?? "manual") || undefined,
   });
   revalidatePath("/lists");
-  revalidatePath(`/lists/${list.id}`);
+  if (resultListId) revalidatePath(`/lists/${resultListId}`);
 }
 
 export async function toggleListItem(id: string, checked: boolean) {
-  await db
-    .update(shoppingListItems)
-    .set({ checked })
-    .where(eq(shoppingListItems.id, id));
+  const caller = await resolveCaller();
+  await toggleListItemDomain(caller, id, checked);
   revalidatePath("/lists");
 }
 
 export async function createShoppingList(formData: FormData) {
-  const name = String(formData.get("name") ?? "").trim() || "Shopping list";
-  const [list] = await db.insert(shoppingLists).values({ name }).returning();
+  const caller = await resolveCaller();
+  const id = await createShoppingListDomain(caller, String(formData.get("name") ?? ""));
   revalidatePath("/lists");
-  return list.id;
+  return id;
 }
 
 export async function addMissingIngredientsToList(
   ingredients: { name: string; quantity: number | null; unit: string | null }[],
 ) {
-  const list = await getOrCreateDefaultList();
-  for (const ingredient of ingredients) {
-    const item = await findOrCreateItem({ name: ingredient.name });
-    await db.insert(shoppingListItems).values({
-      listId: list.id,
-      itemId: item?.id ?? null,
-      name: item?.name ?? ingredient.name,
-      quantity: ingredient.quantity ?? 1,
-      unit: ingredient.unit ?? item?.defaultUnit ?? "each",
-      reason: "recipe",
-    });
-  }
+  const caller = await resolveCaller();
+  const listId = await addMissingIngredientsToListDomain(caller, ingredients);
   revalidatePath("/lists");
   revalidatePath("/recipes");
-  return list.id;
+  return listId;
 }

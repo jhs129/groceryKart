@@ -16,21 +16,24 @@ export function normalizeName(value: string) {
     .trim();
 }
 
-export async function findMatchingItem(rawName: string) {
+export async function findMatchingItem(organizationId: string, rawName: string) {
   const normalized = normalizeName(rawName);
   if (!normalized) return null;
 
   const exact = await db.query.items.findFirst({
-    where: eq(items.normalizedName, normalized),
+    where: and(eq(items.organizationId, organizationId), eq(items.normalizedName, normalized)),
   });
   if (exact) return exact;
 
   const tokens = normalized.split(" ").filter((token) => token.length > 2);
   const fuzzy = await db.query.items.findMany({
-    where: or(
-      ilike(items.name, `%${normalized}%`),
-      ilike(items.normalizedName, `%${normalized}%`),
-      ...tokens.slice(0, 3).map((token) => ilike(items.name, `%${token}%`)),
+    where: and(
+      eq(items.organizationId, organizationId),
+      or(
+        ilike(items.name, `%${normalized}%`),
+        ilike(items.normalizedName, `%${normalized}%`),
+        ...tokens.slice(0, 3).map((token) => ilike(items.name, `%${token}%`)),
+      ),
     ),
     limit: 8,
   });
@@ -47,20 +50,24 @@ export async function findMatchingItem(rawName: string) {
   return scored[0] && scored[0].score > 0 ? scored[0].item : null;
 }
 
-export async function findOrCreateItem(input: {
-  name: string;
-  category?: string;
-  unit?: string;
-  perishable?: boolean;
-  location?: string;
-  shelfLifeDays?: number | null;
-}) {
-  const existing = await findMatchingItem(input.name);
+export async function findOrCreateItem(
+  organizationId: string,
+  input: {
+    name: string;
+    category?: string;
+    unit?: string;
+    perishable?: boolean;
+    location?: string;
+    shelfLifeDays?: number | null;
+  },
+) {
+  const existing = await findMatchingItem(organizationId, input.name);
   if (existing) return existing;
 
   const [created] = await db
     .insert(items)
     .values({
+      organizationId,
       name: titleCase(input.name),
       normalizedName: normalizeName(input.name) || input.name.toLowerCase(),
       category: (input.category as Category | undefined) ?? "other",
@@ -76,16 +83,20 @@ export async function findOrCreateItem(input: {
   if (created) return created;
 
   return db.query.items.findFirst({
-    where: eq(items.normalizedName, normalizeName(input.name)),
+    where: and(
+      eq(items.organizationId, organizationId),
+      eq(items.normalizedName, normalizeName(input.name)),
+    ),
   });
 }
 
-export async function searchItems(query: string) {
+export async function searchItems(organizationId: string, query: string) {
   const normalized = normalizeName(query);
   if (!normalized) return [];
   const tokens = normalized.split(" ").filter(Boolean);
   return db.query.items.findMany({
     where: and(
+      eq(items.organizationId, organizationId),
       or(
         ilike(items.name, `%${normalized}%`),
         ilike(items.normalizedName, `%${normalized}%`),
